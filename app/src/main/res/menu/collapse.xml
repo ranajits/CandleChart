@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    none|daily|weekly|monthly|quarterly|annual
+    <item
+        android:id="@+id/none"
+        android:title="none">
+    </item>
+    <item
+        android:id="@+id/daily"
+        android:title="daily">
+    </item>
+
+    <item
+        android:id="@+id/weekly"
+        android:title="weekly">
+    </item>
+    <item
+        android:id="@+id/monthly"
+        android:title="monthly">
+    </item>
+
+    <item
+        android:id="@+id/quarterly"
+        android:title="quarterly">
+    </item>
+    <item
+        android:id="@+id/annual"
+        android:title="annual">
+    </item>
+
+
+
+
+</menu>
