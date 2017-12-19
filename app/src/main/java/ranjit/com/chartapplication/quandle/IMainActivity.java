@@ -8,4 +8,6 @@ public interface IMainActivity {
     void showOHLC(List<OHLC> list);
     void showProgresBar();
     void stopProgresBar();
+
+
 }

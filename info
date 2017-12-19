@@ -1,0 +1,22 @@
+
+
+imp info:
+
+https://www.programmableweb.com/news/quandl-api-wikipedia-numerical-data/2013/02/25
+
+https://www.quandl.com/api/v3/datasets/WIKI/k.json?collapse=annual
+
+
+collapse=none|daily|weekly|monthly|quarterly|annual
+
+    //QwAcaE1Yz2oGLQ1XthEY  Welcome to Quandl!
+
+
+API Key	VBE8CY40-S7AIP1S3-GJ6HWN7T-KOC9F0H0	Delete
+Secret	e210e590a0212e3c2a569a362288a946994a33c2e3a3bc8c7750ac60b4d4ff2a2b6c4e1dfdde767ae514e8887d5f80595e702f8c2dacd783ad96a3b841182cc4
+Created	2017-10-27 04:36:57
+Last Accessed	Never
+Options	 Enable Trading   Enable Withdrawals
+IP Access Restriction	Enable Two-Factor Authentication on your account to access this setting. Highly recommended
+
+https://poloniex.com/public?command=returnTradeHistory&currencyPair=BTC_NXT&start=1410158341&end=1410499372&key=VBE8CY40-S7AIP1S3-GJ6HWN7T-KOC9F0H0&Sign=e210e590a0212e3c2a569a362288a946994a33c2e3a3bc8c7750ac60b4d4ff2a2b6c4e1dfdde767ae514e8887d5f80595e702f8c2dacd783ad96a3b841182cc4

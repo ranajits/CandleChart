@@ -7,13 +7,16 @@ public class OHLC {
     private double high;
     private double low;
     private double close;
+    private double volume;
 
-    public OHLC(String date, double open, double high, double low, double close) {
+
+    public OHLC(String date, double open, double high, double low, double close, double volume) {
         this.date = date;
         this.open = open;
         this.high = high;
         this.low = low;
         this.close = close;
+        this.volume= volume;
     }
 
     public double getOpen() {
@@ -64,6 +67,14 @@ public class OHLC {
                 ", high='" + high + '\'' +
                 ", low='" + low + '\'' +
                 ", close='" + close + '\'' +
+                ", volume='" + volume + '\'' +
                 '}';
+    }
+    public double getVolume() {
+        return volume;
+    }
+
+    public void setVolume(double volume) {
+        this.volume = volume;
     }
 }

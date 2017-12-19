@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-   <!-- <com.github.mikephil.charting.charts.CandleStickChart-->
+    <!-- <com.github.mikephil.charting.charts.CandleStickChart-->
     <com.github.mikephil.charting.charts.CombinedChart
         android:id="@+id/chart1"
         android:layout_width="match_parent"
@@ -73,7 +73,7 @@
 
 
 
-  <TextView
+    <TextView
         android:id="@+id/txtPeriod"
         android:layout_width="wrap_content"
         android:layout_height="70dp"
@@ -88,5 +88,5 @@
         android:onClick="showPopup"
         android:layout_height="70dp"
         android:layout_alignParentRight="true"
-        android:src="@drawable/ic_date_range_18dp"/>
+        android:src="@drawable/ic_icon_date_24dp"/>
 </RelativeLayout>

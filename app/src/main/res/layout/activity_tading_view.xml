@@ -4,6 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ranjit.com.chartapplication.TadingView">
+    tools:context="ranjit.com.chartapplication.TadingViewActivity">
 
 </android.support.constraint.ConstraintLayout>

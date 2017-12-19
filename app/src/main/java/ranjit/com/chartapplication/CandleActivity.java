@@ -15,14 +15,21 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.CandleStickChart;
+import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.XAxis.XAxisPosition;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.CandleData;
 import com.github.mikephil.charting.data.CandleDataSet;
 import com.github.mikephil.charting.data.CandleEntry;
+import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 import java.text.SimpleDateFormat;
@@ -43,7 +50,8 @@ import ranjit.com.chartapplication.quandle.OHLC;
 
 public class CandleActivity extends DemoBase implements OnSeekBarChangeListener , IMainActivity {
 
-    private CandleStickChart mChart;
+    // private CandleStickChart mChart;
+    CombinedChart mChart;
     ContentLoadingProgressBar progressBar;
     IMainPresenter presenter;
 
@@ -64,7 +72,8 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
         progressBar= findViewById(R.id.progressBar);
 
 
-        mChart = (CandleStickChart) findViewById(R.id.chart1);
+        //  mChart = (CandleStickChart) findViewById(R.id.chart1);
+        mChart = (CombinedChart) findViewById(R.id.chart1);
         mChart.setBackgroundColor(Color.WHITE);
 
         mChart.getDescription().setEnabled(false);
@@ -110,7 +119,7 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
         PERI.setText(period+" to 2017-10-27\n Collapse: "+collapse );
 
         presenter.showOHLC("k", "k", collapse, period);
-  }
+    }
 
     public void showPopup(View v){
 
@@ -124,11 +133,11 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
                 periodContext= item.getTitle().toString();
 
                 String  pr= "";
-                if(item.getItemId()==R.id.day){
+                /*if(item.getItemId()==R.id.day){
                     pr=     getPeriod(1);
                 }else if(item.getItemId()==R.id.week){
                     pr=      getPeriod(7);
-                }else if(item.getItemId()==R.id.month){
+                }else*/ if(item.getItemId()==R.id.month){
                     pr=    getPeriod(30);
                 }else if(item.getItemId()==R.id.quarter){
                     pr=    getPeriod(90);
@@ -205,6 +214,9 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
 
     ArrayList<CandleEntry> yVals1;
     ArrayList<String> labels;
+    ArrayList<Float> avgs;
+
+
     @Override
     public void showOHLC(List<OHLC> list) {
         Log.d("OHLC: ", ""+ list);
@@ -214,6 +226,7 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
             mChart.getCandleData().clearValues();
         yVals1 = new ArrayList<CandleEntry>();
         labels = new ArrayList<String>();
+        avgs= new ArrayList<>();
         labels.clear();
         yVals1.clear();
 
@@ -231,6 +244,25 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
                 ));
 
                 labels.add( list.get(i).getDate());
+            }
+
+           /* long low, open, close = 45, high;
+            for (int i = 0; i < 30; i++) {
+                open = close;
+                close += ~~(Math.random() * 10) * Math.pow(-1, ~~(Math.random() * 2));
+                high = Math.max(open, close) + ~~(Math.random() * 10);
+                low = Math.min(open, close) - ~~(Math.random() * 10);
+                data.addRow([new Date(2014, 0, i + 1), low, open, close, high]);
+            }*/
+
+            float low, open, close , high;
+            for (int i = 0; i < list.size(); i++) {
+                open= (float)list.get(i).getOpen();
+                high=     (float) list.get(i).getHigh();
+                low=       (float) list.get(i).getLow();
+                close=        (float)list.get(i).getClose();
+
+                avgs.add((open+high+low+close)/4);
             }
 
 
@@ -254,7 +286,14 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
 
 
 
-            mChart.setData(data);
+            CombinedData combinedData = new CombinedData();
+
+            combinedData.setData(generateLineData());
+            combinedData.setData(data);
+            combinedData.setData(generateBarData());
+
+            // mChart.setData(data);
+            mChart.setData(combinedData);
 
             xAxis.setValueFormatter(new IAxisValueFormatter() {
                 @Override
@@ -273,7 +312,77 @@ public class CandleActivity extends DemoBase implements OnSeekBarChangeListener 
     }
 
 
+    private  int itemcount = 12;
+    private LineData generateLineData() {
 
+        itemcount= avgs.size()/5;
+        LineData d = new LineData();
+
+        ArrayList<Entry> entries = new ArrayList<Entry>();
+
+        for (int index = 0; index < itemcount; index++)
+            entries.add(new Entry(((index+1)*5), avgs.get(index)));//getRandom(15, 5)));// index + 0.5f
+
+        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        set.setColor(Color.rgb(240, 238, 70));
+        set.setLineWidth(2.5f);
+        //set.setCircleColor(Color.rgb(240, 238, 70));
+        //set.setCircleRadius(5f);
+        set.setFillColor(Color.rgb(240, 238, 70));
+        set.setMode(LineDataSet.Mode.LINEAR);
+        set.setDrawValues(true);
+        set.setValueTextSize(10f);
+        set.setValueTextColor(Color.rgb(240, 238, 70));
+
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+        d.addDataSet(set);
+
+        return d;
+    }
+
+
+
+
+
+
+    private BarData generateBarData() {
+
+        ArrayList<BarEntry> entries1 = new ArrayList<BarEntry>();
+        ArrayList<BarEntry> entries2 = new ArrayList<BarEntry>();
+
+        for (int index = 0; index < itemcount; index++) {
+            entries1.add(new BarEntry(0, getRandom(25, 25)));
+
+            // stacked
+            entries2.add(new BarEntry(0, new float[]{getRandom(13, 12), getRandom(13, 12)}));
+        }
+
+        BarDataSet set1 = new BarDataSet(entries1, "Bar 1");
+        set1.setColor(Color.rgb(60, 220, 78));
+        set1.setValueTextColor(Color.rgb(60, 220, 78));
+        set1.setValueTextSize(10f);
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+        BarDataSet set2 = new BarDataSet(entries2, "");
+        set2.setStackLabels(new String[]{"Stack 1", "Stack 2"});
+        set2.setColors(new int[]{Color.rgb(61, 165, 255), Color.rgb(23, 197, 255)});
+        set2.setValueTextColor(Color.rgb(61, 165, 255));
+        set2.setValueTextSize(10f);
+        set2.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+        float groupSpace = 0.06f;
+        float barSpace = 0.02f; // x2 dataset
+        float barWidth = 0.45f; // x2 dataset
+        // (0.45 + 0.02) * 2 + 0.06 = 1.00 -> interval per "group"
+
+        BarData d = new BarData(set1, set2);
+        d.setBarWidth(barWidth);
+
+        // make this BarData object grouped
+        d.groupBars(0, groupSpace, barSpace); // start at x = 0
+
+        return d;
+    }
     @Override
     public void showProgresBar() {
         progressBar.setVisibility(View.VISIBLE);

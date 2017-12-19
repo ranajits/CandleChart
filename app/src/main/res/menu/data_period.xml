@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     none|daily|weekly|monthly|quarterly|annual
-    <item
+    <!--<item
         android:id="@+id/none"
         android:title="Default">
     </item>
@@ -14,8 +14,8 @@
     <item
         android:id="@+id/week"
         android:title="Week">
-    </item>
-    <item
+    </item>&ndash;&gt;
+   --> <item
         android:id="@+id/month"
         android:title="Month">
     </item>

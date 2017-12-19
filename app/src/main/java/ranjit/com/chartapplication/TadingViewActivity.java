@@ -8,7 +8,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 
-public class TadingView extends AppCompatActivity {
+public class TadingViewActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,7 @@ public class TadingView extends AppCompatActivity {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(TadingView.this, CandleActivity.class));
+                startActivity(new Intent(TadingViewActivity.this, CandleActivity.class));
             }
         });
 
