@@ -7,11 +7,15 @@
     tools:context="ranjit.com.chartapplication.SplashActivity">
 
 
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_gravity="center"
         android:layout_centerInParent="true">
         <Button
             style="@style/orangeButton"
@@ -41,7 +45,7 @@
             android:layout_margin="25dp"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:text="Compare Data"
+            android:text="OHLC/Volume seperate"
             />
         <Button
             style="@style/orangeButton"
@@ -53,4 +57,6 @@
             android:text="Socket Data"
             />
     </LinearLayout>
+
+</ScrollView>
 </RelativeLayout>

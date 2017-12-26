@@ -16,9 +16,11 @@ import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -132,17 +134,22 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+
         YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.setLabelCount(7, false);
-        leftAxis.setDrawGridLines(false);
-        leftAxis.setDrawAxisLine(false);
+        leftAxis.setLabelCount(7, true);
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setDrawAxisLine(true);
+        leftAxis.setAxisMinimum(-0.01f);
 
         YAxis rightAxis = mChart.getAxisRight();
         rightAxis.setLabelCount(5, false);
         rightAxis.setDrawGridLines(false);
         rightAxis.setAxisMaximum(12000000);
         rightAxis.setDrawAxisLine(false);
+        rightAxis.setAxisMinimum(0);
         mChart.setNoDataText("");
+
 
 
         cryptoPresenter= new CryptoPresentrer(this) ;
@@ -168,7 +175,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
         txtPeriod.setText(period+" to "+sdf.format(cal.getTime()));
         // presenter.showOHLC("k", "k", collapse, period);
-        cryptoPresenter.showCryptoOHLC("k", "k", currency, "30");
+        cryptoPresenter.showCryptoOHLC( "k", currency, "30","CCCAGG");
         customMarkerView = new CustomMarkerView(getApplicationContext(), R.layout.marker);
         customMarkerImgView = new CustomMarkerImageView(getApplicationContext(), R.layout.marker_img);
 
@@ -240,6 +247,11 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
         }
 
+        Description description= new Description();
+        description.setText("");
+        mChart.setDescription(description);
+        mChart.getViewPortHandler().setMaximumScaleX(2f);
+        mChart.getViewPortHandler().setMaximumScaleY(2f);
     }
 
     public void showPopup(View v){
@@ -274,7 +286,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
 
                 txtPeriod.setText(pr+" to "+sdf.format(cal.getTime()));
-                cryptoPresenter.showCryptoOHLC("k", currency1, currency, per);
+                cryptoPresenter.showCryptoOHLC(currency1, currency, per, "CCCAGG");
                 mChart.invalidate();
                 return true;
             }
@@ -313,7 +325,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
 
                 txtPeriod.setText(pr+" to "+sdf.format(cal.getTime()));
-                cryptoPresenter.showCryptoOHLC("k", currency1, currency, per);
+                cryptoPresenter.showCryptoOHLC( currency1, currency, per, "CCCAGG");
                 mChart.invalidate();
                 return true;
             }
@@ -344,101 +356,108 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
     @Override
     public void showCryptoOHLC(List<OHLC> list) {
+        if(list!=null) {
 
-        YAxis rightAxis = mChart.getAxisRight();
-        rightAxis.setLabelCount(5, false);
-        rightAxis.setDrawGridLines(false);
-
-        rightAxis.setDrawAxisLine(false);
-        if(currency1.equals("USD")){
-            if(currency.equals("XRP")){
-                rightAxis.setAxisMaximum(120000000);
-            }else {
-            rightAxis.setAxisMaximum(12000000);
-            }
-        }else {
-            rightAxis.setAxisMaximum(800000);
-        }
-
-
-        mChart.invalidate();
-        mChart.clear();
-        if( mChart.getCandleData()!=null)
-            mChart.getCandleData().clearValues();
-        yVals1 = new ArrayList<CandleEntry>();
-        labels = new ArrayList<String>();
-        avgs= new ArrayList<>();
-        avgsDataList= new ArrayList<>();
-        labels.clear();
-        yVals1.clear();
-
-        if(list.size()>0){
-            for (int i = 0; i < list.size(); i++) {
-                yVals1.add(new CandleEntry(
-                        new Long(i),
-                        (float) list.get(i).getHigh(),
-                        (float) list.get(i).getLow(),
-                        (float)list.get(i).getOpen(),
-                        (float)list.get(i).getClose()
-                ));
-                labels.add( list.get(i).getDate());
-            }
-
-
-            float low, open, close , high;
-            for (int i = 0; i < list.size(); i++) {
-                open= (float)list.get(i).getOpen();
-                high= (float) list.get(i).getHigh();
-                low=  (float) list.get(i).getLow();
-                close= (float)list.get(i).getClose();
-                avgs.add((open+high+low+close)/4);
-            }
-
-            Log.d("CandleActivity", " size: "+labels.size()+ "  "+ list.size());
-
-            CandleDataSet set1 = new CandleDataSet(yVals1, "Data Set");
-            CandleData data= new CandleData(set1);
-            set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-            set1.setShadowColor(Color.GREEN);
-            set1.setShadowWidth(0.7f);
-            set1.setHighlightEnabled(true);
-            set1.setDrawHighlightIndicators(true);
-            set1.setDecreasingColor(Color.RED);
-            set1.setDecreasingPaintStyle(Paint.Style.FILL);
-            set1.setIncreasingColor(Color.rgb(122, 242, 84));
-            set1.setIncreasingPaintStyle(Paint.Style.STROKE);
-            set1.setNeutralColor(Color.BLUE);
-
-            set1.setValueTextColor(Color.RED);
-            set1.setShowCandleBar(true);
-            set1.setHighlightLineWidth(2f);
-            set1.setDrawVerticalHighlightIndicator(true);
-            XAxis xAxis = mChart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setDrawGridLines(true);
-
-            CombinedData combinedData = new CombinedData();
-            combinedData.setData(generateLineData());
-            combinedData.setData(data);
-            combinedData.setData(setBarData(list));
-            mChart.setData(combinedData);
-
-            xAxis.setValueFormatter(new IAxisValueFormatter() {
-                @Override
-                public String getFormattedValue(float value, AxisBase axis) {
-                    return getLable(labels.get((int) value));
+            YAxis rightAxis = mChart.getAxisRight();
+            rightAxis.setLabelCount(5, false);
+            rightAxis.setDrawGridLines(false);
+            rightAxis.setAxisMinimum(0);
+            rightAxis.setDrawAxisLine(false);
+            if (currency1.equals("USD")) {
+                if (currency.equals("XRP")) {
+                    rightAxis.setAxisMaximum(120000000);
+                } else {
+                    rightAxis.setAxisMaximum(12000000);
                 }
-            });
+            } else {
+                rightAxis.setAxisMaximum(800000);
+            }
 
-            mChart.animateXY(3000, 3000);
-            mChart.getData().setHighlightEnabled(true);
-            mChart.getCandleData().setHighlightEnabled(true);
-            mChart.getBarData().setHighlightEnabled(true);
-            mChart.getLineData().setHighlightEnabled(true);
 
             mChart.invalidate();
-        }
+            mChart.clear();
+            if (mChart.getCandleData() != null)
+                mChart.getCandleData().clearValues();
+            yVals1 = new ArrayList<CandleEntry>();
+            labels = new ArrayList<String>();
+            avgs = new ArrayList<>();
+            avgsDataList = new ArrayList<>();
+            labels.clear();
+            yVals1.clear();
 
+            if (list.size() > 0) {
+                for (int i = 0; i < list.size(); i++) {
+                    yVals1.add(new CandleEntry(
+                            new Long(i),
+                            (float) list.get(i).getHigh(),
+                            (float) list.get(i).getLow(),
+                            (float) list.get(i).getOpen(),
+                            (float) list.get(i).getClose()
+                    ));
+                    labels.add(list.get(i).getDate());
+                }
+
+
+                float low, open, close, high;
+                for (int i = 0; i < list.size(); i++) {
+                    open = (float) list.get(i).getOpen();
+                    high = (float) list.get(i).getHigh();
+                    low = (float) list.get(i).getLow();
+                    close = (float) list.get(i).getClose();
+                    avgs.add((open + high + low + close) / 4);
+                }
+
+                Log.d("CandleActivity", " size: " + labels.size() + "  " + list.size());
+
+                CandleDataSet set1 = new CandleDataSet(yVals1, "OHLC");
+                CandleData data = new CandleData(set1);
+                set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+                set1.setShadowColor(Color.GREEN);
+                set1.setShadowWidth(0.7f);
+                set1.setHighlightEnabled(true);
+                set1.setDrawHighlightIndicators(true);
+                set1.setDecreasingColor(Color.RED);
+                set1.setDecreasingPaintStyle(Paint.Style.FILL);
+                set1.setIncreasingColor(Color.rgb(122, 242, 84));
+                set1.setIncreasingPaintStyle(Paint.Style.STROKE);
+                set1.setNeutralColor(Color.BLUE);
+
+                set1.setValueTextColor(Color.RED);
+                set1.setShowCandleBar(true);
+                set1.setHighlightLineWidth(2f);
+                set1.setDrawVerticalHighlightIndicator(true);
+                XAxis xAxis = mChart.getXAxis();
+                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                xAxis.setDrawGridLines(true);
+
+                CombinedData combinedData = new CombinedData();
+                combinedData.setData(generateLineData());
+                combinedData.setData(data);
+                combinedData.setData(setBarData(list));
+                mChart.setData(combinedData);
+
+                xAxis.setValueFormatter(new IAxisValueFormatter() {
+                    @Override
+                    public String getFormattedValue(float value, AxisBase axis) {
+                        return getLable(labels.get((int) value));
+                    }
+                });
+
+                mChart.animateXY(3000, 3000);
+                mChart.getData().setHighlightEnabled(true);
+                mChart.getCandleData().setHighlightEnabled(true);
+                mChart.getBarData().setHighlightEnabled(true);
+                mChart.getLineData().setHighlightEnabled(true);
+
+                mChart.invalidate();
+            }
+        }else {
+            mChart.clear();
+
+            mChart.invalidate();
+
+            Toast.makeText(CryptoDataActivity.this, "No Data Found", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String getLable(String seconds){
@@ -470,7 +489,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
         BarDataSet set1=null;
 
-        set1 = new BarDataSet(yVals1, "The year 2017");
+        set1 = new BarDataSet(yVals1, "Volume");
         set1.setAxisDependency(YAxis.AxisDependency.RIGHT);
 
         ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
@@ -511,7 +530,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
             }
         }
 
-        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        LineDataSet set = new LineDataSet(entries, "SMA");
         set.setColor(Color.rgb(240, 238, 70));
         set.setLineWidth(2.5f);
         set.setFillColor(Color.rgb(240, 238, 70));
@@ -549,12 +568,17 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
         progressBar.setVisibility(View.GONE);
     }
 
+    @Override
+    public void showExangeList(List<String> list) {
+
+    }
+
     private class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
             currency = currencyList.get(pos);
-            cryptoPresenter.showCryptoOHLC("k", currency1, currency, per);
+            cryptoPresenter.showCryptoOHLC( currency1, currency, per, "CCCAGG");
             mChart.invalidate();
         }
 
@@ -571,7 +595,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
             currency1 = currencyList2.get(pos);
-            cryptoPresenter.showCryptoOHLC("k", currency1, currency, per);
+            cryptoPresenter.showCryptoOHLC( currency1, currency, per, "CCCAGG");
             mChart.invalidate();
         }
 
@@ -609,7 +633,8 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
 
                 } catch (final JSONException e) {
-
+                    e.printStackTrace();
+                    sCurrency=null;
                 }
             }
 
@@ -622,6 +647,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
 
             if (jsonStr!=null){
 
+                if(sCurrency!=null)
                 txtcurrecyRates.setText("BTC: "+ sCurrency.getBtcValue()+"\nUSD: "+sCurrency.getEthValue());
 
 

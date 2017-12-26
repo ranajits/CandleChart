@@ -29,13 +29,13 @@ public class SplashActivity extends AppCompatActivity {
         findViewById(R.id.btnCompare).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(SplashActivity.this, CompareActivity.class));
+                startActivity(new Intent(SplashActivity.this, CandleBarSeperateActivity.class));
             }
         });
         findViewById(R.id.btnsocket).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(SplashActivity.this, WebSocketActivity.class));
+                startActivity(new Intent(SplashActivity.this, CompareActivity.class));
             }
         });
 

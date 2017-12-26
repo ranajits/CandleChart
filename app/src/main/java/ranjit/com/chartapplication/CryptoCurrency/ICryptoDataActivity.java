@@ -12,4 +12,6 @@ public interface ICryptoDataActivity {
     void showCryptoOHLC(List<OHLC> list);
     void showProgresBar();
     void stopProgresBar();
+    void showExangeList(List<String> list);
+
 }

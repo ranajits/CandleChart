@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -36,6 +37,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -93,10 +95,12 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
         //xAxis.setDrawGridLines(false);
 
         YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setLabelCount(7, false);
+
         leftAxis.setDrawGridLines(false);
         leftAxis.setDrawAxisLine(false);
 
@@ -105,6 +109,7 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
         rightAxis.setDrawGridLines(false);
         rightAxis.setAxisMaximum(30000000);
         rightAxis.setDrawAxisLine(false);
+        rightAxis.setAxisMinimum(0);
         // rightAxis.setEnabled(false);
 
 
@@ -219,8 +224,11 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
             }
         });
 
-
-
+        Description description= new Description();
+        description.setText("");
+        mChart.setDescription(description);
+        mChart.getViewPortHandler().setMaximumScaleX(5f);
+        mChart.getViewPortHandler().setMaximumScaleY(5f);
 
     }
 
@@ -326,6 +334,9 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
         yVals1.clear();
 
         if(list.size()>0){
+
+            Collections.reverse(list);
+
             for (int i = 0; i < list.size(); i++) {
                 yVals1.add(new CandleEntry(
                         new Long(i),
@@ -349,7 +360,7 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
 
             Log.d("CandleActivity", " size: "+labels.size()+ "  "+ list.size());
 
-            CandleDataSet set1 = new CandleDataSet(yVals1, "Data Set");
+            CandleDataSet set1 = new CandleDataSet(yVals1, "OHLC");
             CandleData data= new CandleData(set1);
             set1.setAxisDependency(YAxis.AxisDependency.LEFT);
             set1.setShadowColor(Color.GREEN);
@@ -415,7 +426,7 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
 
         BarDataSet set1=null;
 
-        set1 = new BarDataSet(yVals1, "The year 2017");
+        set1 = new BarDataSet(yVals1, "Volume");
         set1.setAxisDependency(YAxis.AxisDependency.RIGHT);
 
         ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
@@ -425,6 +436,7 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
         data.setValueTextSize(10f);
         data.setValueTypeface(mTfLight);
         data.setBarWidth(0.9f);
+        //data.set
 
         return data;
     }
@@ -460,7 +472,7 @@ public class CandleWithVolume extends DemoBase implements SeekBar.OnSeekBarChang
             }
         }
 
-        LineDataSet set = new LineDataSet(entries, "Line DataSet");
+        LineDataSet set = new LineDataSet(entries, "Simple Moving Average(SMA)");
         set.setColor(Color.rgb(240, 238, 70));
         set.setLineWidth(2.5f);
         set.setFillColor(Color.rgb(240, 238, 70));

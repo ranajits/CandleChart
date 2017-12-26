@@ -31,6 +31,7 @@ public class MainPresenter implements IMainPresenter{
             @Override
             protected void onPostExecute(List<OHLC> ohlcs) {
                 super.onPostExecute(ohlcs);
+
                 activity.showOHLC(ohlcs);
                 activity.stopProgresBar();
             }
