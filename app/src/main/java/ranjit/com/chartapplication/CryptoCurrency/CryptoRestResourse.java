@@ -14,9 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import ranjit.com.chartapplication.Utils;
 import ranjit.com.chartapplication.quandle.OHLC;
@@ -36,7 +38,7 @@ public class CryptoRestResourse {
     }
 
 
-    public List<OHLC> getOHLC(String currency1, String currency, String period, String exchange) {
+    public List<OHLC> getOHLC(String currencyTo, String currencyFrom, String period, String exchange) {
 
         List<OHLC> list = null;
 
@@ -67,7 +69,7 @@ public class CryptoRestResourse {
                     compare= "fsym="+currency+"&tsym=BTC";
                 }*/
 
-            compare= "fsym="+currency+"&tsym="+currency1;
+            compare= "fsym="+currencyFrom+"&tsym="+currencyTo;
             URL url= null;
             if(period.equals("7")){
                 url= new URL("https://min-api.cryptocompare.com/data/histohour?"+compare+"&limit=42&aggregate=4&toTs="+(System.currentTimeMillis()/1000)+"&e="+exchange+"&extraParams=your_app_name");
@@ -77,7 +79,7 @@ public class CryptoRestResourse {
                 url = new URL("https://min-api.cryptocompare.com/data/histoday?" + compare + "&limit=" + period + "&aggregate=1&toTs=" + (System.currentTimeMillis() / 1000)+"&e="+exchange + "&extraParams=your_app_name");
             }
             //URL url = new URL("https://www.quandl.com/api/v3/datasets/WIKI/" + company + ".json?collapse="+collapse+"&api_key=QwAcaE1Yz2oGLQ1XthEY&trim_start="+period+"&trim_end="+ sdf.format(cal.getTime()));//2017-10-27");
-            Log.d(" URL"," "+url);
+            //Log.d(" URL"," "+url);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
@@ -95,10 +97,10 @@ public class CryptoRestResourse {
             JSONObject full = new JSONObject(result);
             // JSONObject dataset = full.getJSONObject("Response");
             String resultCode= full.getString("Response");
-            System.out.println(full);
+           // System.out.println(full);
             System.out.println(resultCode);
             if(resultCode.equals("Success")) {
-              list  = new ArrayList<>();
+                list  = new ArrayList<>();
 
                 JSONArray data = (JSONArray)full.get("Data");
 
@@ -121,9 +123,11 @@ public class CryptoRestResourse {
                             data.getJSONObject(i).getDouble("close"),
                             vol2));
 
-                    Log.d("", "i= "+i+" "+  data.getJSONObject(i).getDouble("high"));
+                    //Log.d("", "i= "+i+" "+  data.getJSONObject(i).getDouble("high"));
                 }
             }
+
+           // System.out.println( getExchangeListNew("OKCoin")); ;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -177,7 +181,7 @@ public class CryptoRestResourse {
             e.printStackTrace();
         }
 
-        System.out.println( getExchangeListNew("OKCoin", 5)); ;
+
 
         return list;
 
@@ -185,67 +189,137 @@ public class CryptoRestResourse {
 
 
 
-    public List<String> getExchangeListNew(String currency, int limit) {
-        List<String> list = new ArrayList<>();
+    public Map<String, ArrayList<String>> getExchangeListNew(String exchange) {
 
+
+        Map<String, ArrayList<String>> product = null;
+        product= new HashMap<>();
         try {
-
             //https://min-api.cryptocompare.com/data/top/pairs?fsym=XRP
-
-
             String result= Utils.str;
-/*
-            JSONObject full = new JSONObject(currency);
-            Log.d("","JSON: "+result);
 
-            JSONArray data = (JSONArray)full.get(currency);
-
-            for (int i = 0; i < data.length(); i++) {
-                JSONArray array = data.getJSONArray(i);
-                list.add(array.getString(i));
-            }*/
-
-
-
-            JSONObject issueObj = new JSONObject(result);
-            //Iterator iterator = issueObj.keys();
+            JSONObject full = new JSONObject(result);
+            // JSONObject dataset = full.getJSONObject("Response");
+            String resultCode= full.getString(exchange);
+            JSONObject issueObj = new JSONObject(resultCode);
             Iterator<String> it = issueObj.keys();
+
+
             while(it.hasNext()){
-              /*  String key = (String)iterator.next();
-                JSONObject issue = issueObj.getJSONObject(key);
-                issue.*/
-
                 String key = it.next();
+                //if(key.equals(exchange)){
+                    try {
 
-                try {
-                    if (issueObj.get(key) instanceof JSONArray) {
-                        JSONArray arry = issueObj.getJSONArray(key);
-                        int size = arry.length();
-                        for (int i = 0; i < size; i++) {
+                        if (issueObj.get(key) instanceof JSONObject) {
 
-                           // parseJson(arry.getJSONObject(i));
+                            System.out.println(" obj2: " + key + " :-- " + issueObj.getJSONObject(key));
+                            JSONObject jsonObject= issueObj.getJSONObject(key);
+                            for(int i = 0; i<jsonObject.length(); i++){
+
+                                ArrayList<String> currencyTos= new ArrayList<>();
+                                JSONArray toCurrencyObject= jsonObject.getJSONArray(jsonObject.names().getString(i));
+                                for(int x = 0; x<toCurrencyObject.length(); x++){
+                                    //currencyTo currencyTo= new currencyTo();
+                                    //currencyTo.setToCurrencyName( toCurrencyObject.getString(x));
+                                    currencyTos.add(toCurrencyObject.getString(x));
+                                }
+
+                                product.put(jsonObject.names().getString(i),currencyTos);
+                                Log.e("", "Key = " + jsonObject.names().getString(i) + " value = " + jsonObject.get(jsonObject.names().getString(i)));
+                            }
+                        } else {
+                            System.out.println(":)" + key + " : " + issueObj.optString(key));
+
+                            System.out.println(" obj2: " + key + " :-- " + issueObj.optString(key));
+                            JSONArray jsonObject= issueObj.getJSONArray(key);
+                            ArrayList<String> currencyTos= new ArrayList<>();
+                            for(int i = 0; i<jsonObject.length(); i++){
+
+
+                                //JSONArray toCurrencyObject= jsonObject.getJSONArray(jsonObject.getString(i));
+                                //for(int x = 0; x<toCurrencyObject.length(); x++){
+                                    //currencyTo currencyTo= new currencyTo();
+                                    //currencyTo.setToCurrencyName( toCurrencyObject.getString(x));
+                                    currencyTos.add(jsonObject.getString(i));
+                                //}
+
+                                product.put(key,currencyTos);
+                              //  Log.e("", "Key = " + jsonObject.names().getString(i) + " value = " + jsonObject.get(jsonObject.names().getString(i)));
+                            }
+
+                            //product.put(key,currencyTos);
                         }
-                    } else if (issueObj.get(key) instanceof JSONObject) {
-                       // parseJson(issueObj.getJSONObject(key));
-                    } else {
-                        System.out.println("" + key + " : " + issueObj.optString(key));
+                    } catch (Throwable e) {
+                        System.out.println(":(" + key + " : " + issueObj.optString(key));
+                        e.printStackTrace();
                     }
-                } catch (Throwable e) {
-                    System.out.println("" + key + " : " + issueObj.optString(key));
-                    e.printStackTrace();
-
                 }
-
-                //  get id from  issue
-                //String _pubKey = issue.optString("id");
-            }
-
-
+           // }
+            System.out.println("final list: "+ product);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return product;
+    }
 
-        return list;
+    public class exchangeCompare{
+        public String exchangeName;
 
+        public String getExchangeName() {
+            return exchangeName;
+        }
+
+        public void setExchangeName(String exchangeName) {
+            this.exchangeName = exchangeName;
+        }
+
+        public ArrayList<currencyFrom> getCurrencyFroms() {
+            return currencyFroms;
+        }
+
+        public void setCurrencyFroms(ArrayList<currencyFrom> currencyFroms) {
+            this.currencyFroms = currencyFroms;
+        }
+
+        public ArrayList<currencyFrom> currencyFroms;
+
+
+
+
+    }
+    public class currencyFrom{
+        String fromCurrencyName;
+
+        public String getFromCurrencyName() {
+            return fromCurrencyName;
+        }
+
+        public void setFromCurrencyName(String fromCurrencyName) {
+            this.fromCurrencyName = fromCurrencyName;
+        }
+
+        public ArrayList<currencyTo> getCurrencyTos() {
+            return currencyTos;
+        }
+
+        public void setCurrencyTos(ArrayList<currencyTo> currencyTos) {
+            this.currencyTos = currencyTos;
+        }
+
+        public ArrayList<currencyTo> currencyTos;
+
+
+
+    }
+    public class currencyTo{
+        String toCurrencyName;
+
+        public String getToCurrencyName() {
+            return toCurrencyName;
+        }
+
+        public void setToCurrencyName(String toCurrencyName) {
+            this.toCurrencyName = toCurrencyName;
+        }
     }
 }

@@ -6,6 +6,6 @@ package ranjit.com.chartapplication.CryptoCurrency;
 
 public interface ICryptoPresenter {
     void showCryptoOHLC( String company, String collapse, String period, String exchange);
-    void getTopExchange(String currency, int limit);
+    void getTopExchange(String exchanges);
 
 }

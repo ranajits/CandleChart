@@ -2,7 +2,9 @@ package ranjit.com.chartapplication.CryptoCurrency;
 
 import android.os.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import ranjit.com.chartapplication.quandle.OHLC;
 
@@ -21,7 +23,7 @@ public class CryptoPresentrer implements ICryptoPresenter {
     }
 
     @Override
-    public void showCryptoOHLC( final String currency1, final String currency, final String period, final  String exchange) {
+    public void showCryptoOHLC( final String currencyTo, final String currencyFrom, final String period, final  String exchange) {
         new AsyncTask<Void, Void, List<OHLC>>() {
             @Override
             protected void onPreExecute() {
@@ -31,7 +33,7 @@ public class CryptoPresentrer implements ICryptoPresenter {
 
             @Override
             protected List<OHLC> doInBackground(Void... params) {
-                return restResourse.getOHLC(currency1, currency, period, exchange);
+                return restResourse.getOHLC(currencyTo, currencyFrom, period, exchange);
             }
 
             @Override
@@ -45,8 +47,8 @@ public class CryptoPresentrer implements ICryptoPresenter {
     }
 
     @Override
-    public void getTopExchange(final String currency, final int limit) {
-        new AsyncTask<Void, Void, List<String>>() {
+    public void getTopExchange(final String exchange) {
+        new AsyncTask<Void, Void,Map<String, ArrayList<String>>>() {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
@@ -54,14 +56,14 @@ public class CryptoPresentrer implements ICryptoPresenter {
             }
 
             @Override
-            protected List<String> doInBackground(Void... params) {
-                return restResourse.getExchangeList(currency, limit);
+            protected Map<String, ArrayList<String>> doInBackground(Void... params) {
+                return restResourse.getExchangeListNew(exchange);
             }
 
             @Override
-            protected void onPostExecute(List<String> ohlcs) {
-                super.onPostExecute(ohlcs);
-                activity.showExangeList(ohlcs);
+            protected void onPostExecute(Map<String, ArrayList<String>> currencies) {
+                super.onPostExecute(currencies);
+                activity.showExangeList(currencies);
                 activity.stopProgresBar();
             }
         }.execute();

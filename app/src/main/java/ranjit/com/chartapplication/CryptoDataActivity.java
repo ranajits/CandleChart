@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -38,7 +37,6 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import ranjit.com.chartapplication.Compare.Currency;
 import ranjit.com.chartapplication.Compare.HttpHandler;
@@ -231,7 +230,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
         //jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms=XMR&tsyms=BTC,USD";
         jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms="+currency+"&tsyms=BTC,USD";
         Log.d("URL: "," "+jsonURL);
-        new GetCurrencies().execute();
+        /*new GetCurrencies().execute();
 
         if (jsonURL!=null){
 
@@ -245,7 +244,7 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
                 }
             }, 5000);
 
-        }
+        }*/
 
         Description description= new Description();
         description.setText("");
@@ -569,9 +568,10 @@ public class CryptoDataActivity extends AppCompatActivity implements ICryptoData
     }
 
     @Override
-    public void showExangeList(List<String> list) {
+    public void showExangeList(Map<String, ArrayList<String>> list) {
 
     }
+
 
     private class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 

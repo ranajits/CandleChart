@@ -15,7 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.Chart;
@@ -48,8 +47,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import ranjit.com.chartapplication.Compare.Currency;
 import ranjit.com.chartapplication.Compare.HttpHandler;
@@ -76,13 +79,13 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
     TextView txtPeriod;
     Calendar cal;
     SimpleDateFormat sdf;
-    String currency="ETH";
-    String currency1="BTC";
+    String currencyFrom="ETH";
+    String currencyTo="BTC";
     String per="30";
-    private ArrayList<String> currencyList, currencyList2;
-    private Spinner mCurSpinner, mCurSpinner1, exchange_spinner;
-    private String [] mCurrencies = {"ETH","LTC", "XMR","XRP"/*, "DASH", "ZEC"*/};
-    private String [] mCurrencies2 = {"BTC","USD"};
+    private ArrayList<String> currencyList, currencyListTo;
+    private Spinner spinnerFrom, spinnerTo, exchange_spinner;
+    private String [] currenciesFrom = {"ETH","LTC", "XMR","XRP"/*, "DASH", "ZEC"*/};
+    private String [] currenciesTo = {"BTC","USD"};
     private String [] mExchanges = {"Default","Poloniex", "Gemini", "Binance", "Gatecoin", "Kucoin"};
 
     TextView txtcurrecyRates;
@@ -90,6 +93,7 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
     Currency sCurrency;
     boolean defalutExchanges= true;
     String exchange= "CCCAGG";
+    Map<String, ArrayList<String>> arrayListMap=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,36 +101,36 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.candle_bar_seperate);
-
+        arrayListMap= new HashMap<>();
         progressBar= findViewById(R.id.progressBar);
-        mCurSpinner = (Spinner) findViewById(R.id.currency_spinner);
-        mCurSpinner1 = (Spinner) findViewById(R.id.currency_spinner2);
+        spinnerFrom = (Spinner) findViewById(R.id.currency_spinner);
+        spinnerTo = (Spinner) findViewById(R.id.currency_spinner2);
         exchange_spinner= (Spinner) findViewById(R.id.exchange_spinner);
         txtcurrecyRates= findViewById(R.id.txtcurrecyRates);
-        mCurSpinner.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-        mCurSpinner1.setOnItemSelectedListener(new CustomOnItemSelectedListener2());
+        spinnerFrom.setOnItemSelectedListener(new SpinnerFromOnItemSelectedListener());
+        spinnerTo.setOnItemSelectedListener(new SpinnetToOnItemSelectedListener());
         exchange_spinner.setOnItemSelectedListener(new CustomOnItemSelectedListenerforExchange());
 
 
         currencyList = new ArrayList<>();
-        for (int i = 0; i < mCurrencies.length; i++){
-            String title = mCurrencies[i];
+        for (int i = 0; i < currenciesFrom.length; i++){
+            String title = currenciesFrom[i];
             currencyList.add(title);
         }
-        currencyList2 = new ArrayList<>();
-        for (int i = 0; i < mCurrencies2.length; i++){
-            String title = mCurrencies2[i];
-            currencyList2.add(title);
+        currencyListTo = new ArrayList<>();
+        for (int i = 0; i < currenciesTo.length; i++){
+            String title = currenciesTo[i];
+            currencyListTo.add(title);
         }
 
 
-        ArrayAdapter<String> myAdapter = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, mCurrencies);
+        ArrayAdapter<String> myAdapter = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, currenciesFrom);
         myAdapter.setDropDownViewResource(android.R.layout.simple_list_item_checked);
-        mCurSpinner.setAdapter(myAdapter);
+        spinnerFrom.setAdapter(myAdapter);
 
-        ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, mCurrencies2);
+        ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, currenciesTo);
         myAdapter2.setDropDownViewResource(android.R.layout.simple_list_item_checked);
-        mCurSpinner1.setAdapter(myAdapter2);
+        spinnerTo.setAdapter(myAdapter2);
 
 
         ArrayAdapter<String> myAdapter3 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, mExchanges);
@@ -163,7 +167,7 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
 
         txtPeriod.setText(period+" to "+sdf.format(cal.getTime()));
         // presenter.showOHLC("k", "k", collapse, period);
-        cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange);
+        cryptoPresenter.showCryptoOHLC( currencyTo, currencyFrom, per, exchange);
         customMarkerView = new CustomMarkerView(getApplicationContext(), R.layout.marker);
         customMarkerViewForBar = new CustomMarkerViewForBar(getApplicationContext(), R.layout.marker);
         customMarkerImgView = new CustomMarkerImageView(getApplicationContext(), R.layout.marker_img);
@@ -171,11 +175,11 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
 
 
         //jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms=XMR&tsyms=BTC,USD";
-        jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms="+currency+"&tsyms=BTC,USD";
+        jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms="+currencyFrom+"&tsyms=BTC,USD";
         Log.d("URL: "," "+jsonURL);
-        //new GetCurrencies().execute();
+        /*new GetCurrencies().execute();
 
-      /*  if (jsonURL!=null){
+        if (jsonURL!=null){
 
             final Handler ha=new Handler();
             ha.postDelayed(new Runnable() {
@@ -183,9 +187,9 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
                 @Override
                 public void run() {
                     refresh();
-                    ha.postDelayed(this, 5000);
+                    ha.postDelayed(this, 3000);
                 }
-            }, 5000);
+            }, 3000);
 
         }*/
     }
@@ -397,7 +401,7 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
 
 
                 txtPeriod.setText(pr+" to "+sdf.format(cal.getTime()));
-                cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange );
+                cryptoPresenter.showCryptoOHLC( currencyTo, currencyFrom, per, exchange );
                 mChart.invalidate();
                 return true;
             }
@@ -435,124 +439,124 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
         if(list!=null){
 
 
-        mChart.getAxisRight().setEnabled(false);
-
-        mChart.invalidate();
-        barChart.invalidate();
-        mChart.clear();
-        if( mChart.getCandleData()!=null)
-            mChart.getCandleData().clearValues();
-        yVals1 = new ArrayList<CandleEntry>();
-        labels = new ArrayList<String>();
-        avgs= new ArrayList<>();
-        avgsDataList= new ArrayList<>();
-        labels.clear();
-        yVals1.clear();
-
-        if(list.size()>0) {
-            for (int i = 0; i < list.size(); i++) {
-                yVals1.add(new CandleEntry(
-                        new Long(i),
-                        (float) list.get(i).getHigh(),
-                        (float) list.get(i).getLow(),
-                        (float) list.get(i).getOpen(),
-                        (float) list.get(i).getClose()
-                ));
-                labels.add(list.get(i).getDate());
-            }
-
-
-            float low, open, close, high;
-            for (int i = 0; i < list.size(); i++) {
-                open = (float) list.get(i).getOpen();
-                high = (float) list.get(i).getHigh();
-                low = (float) list.get(i).getLow();
-                close = (float) list.get(i).getClose();
-                avgs.add((open + high + low + close) / 4);
-            }
-
-            Log.d("CandleActivity", " size: " + labels.size() + "  " + list.size());
-
-            CandleDataSet set1 = new CandleDataSet(yVals1, "OHLC");
-            CandleData data = new CandleData(set1);
-            set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-            set1.setShadowColor(Color.GREEN);
-            set1.setShadowWidth(0.7f);
-            set1.setHighlightEnabled(true);
-            set1.setDrawHighlightIndicators(true);
-            set1.setDecreasingColor(Color.RED);
-            set1.setDecreasingPaintStyle(Paint.Style.FILL);
-            set1.setIncreasingColor(Color.rgb(122, 242, 84));
-            set1.setIncreasingPaintStyle(Paint.Style.STROKE);
-            set1.setNeutralColor(Color.BLUE);
-
-            set1.setValueTextColor(Color.RED);
-            set1.setShowCandleBar(true);
-            set1.setHighlightLineWidth(2f);
-            set1.setDrawVerticalHighlightIndicator(true);
-            XAxis xAxis = mChart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setDrawGridLines(true);
-
-            XAxis barChartxAxis = barChart.getXAxis();
-            barChartxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            barChartxAxis.setDrawGridLines(false);
-            barChartxAxis.enableGridDashedLine(10f, 10f, 2f);
-
-            CombinedData combinedData = new CombinedData();
-            combinedData.setData(generateLineData());
-            combinedData.setData(data);
-            //  combinedData.setData(setBarData(list));
-
-            mChart.setData(combinedData);
-            barChart.setData(setBarData(list));
-
-            barChartxAxis.setValueFormatter(new IAxisValueFormatter() {
-                @Override
-                public String getFormattedValue(float value, AxisBase axis) {
-                    String val = "";
-                    try {
-                        val = getLable(labels.get((int) value));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-
-                    }
-                    return val;
-                }
-            });
-            xAxis.setValueFormatter(new IAxisValueFormatter() {
-                @Override
-                public String getFormattedValue(float value, AxisBase axis) {
-
-                    String val = "";
-                    try {
-                        val = getLable(labels.get((int) value));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-
-                    }
-                    return val;
-                }
-            });
-
-            mChart.animateXY(3000, 3000);
-            barChart.animateXY(3000, 3000);
-            mChart.getData().setHighlightEnabled(true);
-
-            barChart.getBarData().setHighlightEnabled(true);
-            mChart.getCandleData().setHighlightEnabled(true);
-            //  mChart.getBarData().setHighlightEnabled(true);
-            mChart.getLineData().setHighlightEnabled(true);
+            mChart.getAxisRight().setEnabled(false);
 
             mChart.invalidate();
             barChart.invalidate();
-        }
+            mChart.clear();
+            if( mChart.getCandleData()!=null)
+                mChart.getCandleData().clearValues();
+            yVals1 = new ArrayList<CandleEntry>();
+            labels = new ArrayList<String>();
+            avgs= new ArrayList<>();
+            avgsDataList= new ArrayList<>();
+            labels.clear();
+            yVals1.clear();
+
+            if(list.size()>0) {
+                for (int i = 0; i < list.size(); i++) {
+                    yVals1.add(new CandleEntry(
+                            new Long(i),
+                            (float) list.get(i).getHigh(),
+                            (float) list.get(i).getLow(),
+                            (float) list.get(i).getOpen(),
+                            (float) list.get(i).getClose()
+                    ));
+                    labels.add(list.get(i).getDate());
+                }
+
+
+                float low, open, close, high;
+                for (int i = 0; i < list.size(); i++) {
+                    open = (float) list.get(i).getOpen();
+                    high = (float) list.get(i).getHigh();
+                    low = (float) list.get(i).getLow();
+                    close = (float) list.get(i).getClose();
+                    avgs.add((open + high + low + close) / 4);
+                }
+
+                Log.d("CandleActivity", " size: " + labels.size() + "  " + list.size());
+
+                CandleDataSet set1 = new CandleDataSet(yVals1, "OHLC");
+                CandleData data = new CandleData(set1);
+                set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+                set1.setShadowColor(Color.GREEN);
+                set1.setShadowWidth(0.7f);
+                set1.setHighlightEnabled(true);
+                set1.setDrawHighlightIndicators(true);
+                set1.setDecreasingColor(Color.RED);
+                set1.setDecreasingPaintStyle(Paint.Style.FILL);
+                set1.setIncreasingColor(Color.rgb(122, 242, 84));
+                set1.setIncreasingPaintStyle(Paint.Style.STROKE);
+                set1.setNeutralColor(Color.BLUE);
+
+                set1.setValueTextColor(Color.RED);
+                set1.setShowCandleBar(true);
+                set1.setHighlightLineWidth(2f);
+                set1.setDrawVerticalHighlightIndicator(true);
+                XAxis xAxis = mChart.getXAxis();
+                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                xAxis.setDrawGridLines(true);
+
+                XAxis barChartxAxis = barChart.getXAxis();
+                barChartxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                barChartxAxis.setDrawGridLines(false);
+                barChartxAxis.enableGridDashedLine(10f, 10f, 2f);
+
+                CombinedData combinedData = new CombinedData();
+                combinedData.setData(generateLineData());
+                combinedData.setData(data);
+                //  combinedData.setData(setBarData(list));
+
+                mChart.setData(combinedData);
+                barChart.setData(setBarData(list));
+
+                barChartxAxis.setValueFormatter(new IAxisValueFormatter() {
+                    @Override
+                    public String getFormattedValue(float value, AxisBase axis) {
+                        String val = "";
+                        try {
+                            val = getLable(labels.get((int) value));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                        return val;
+                    }
+                });
+                xAxis.setValueFormatter(new IAxisValueFormatter() {
+                    @Override
+                    public String getFormattedValue(float value, AxisBase axis) {
+
+                        String val = "";
+                        try {
+                            val = getLable(labels.get((int) value));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+
+                        }
+                        return val;
+                    }
+                });
+
+                mChart.animateXY(3000, 3000);
+                barChart.animateXY(3000, 3000);
+                mChart.getData().setHighlightEnabled(true);
+
+                barChart.getBarData().setHighlightEnabled(true);
+                mChart.getCandleData().setHighlightEnabled(true);
+                //  mChart.getBarData().setHighlightEnabled(true);
+                mChart.getLineData().setHighlightEnabled(true);
+
+                mChart.invalidate();
+                barChart.invalidate();
+            }
         }else {
             mChart.clear();
             barChart.clear();
             mChart.invalidate();
             barChart.invalidate();
-            Toast.makeText(CandleBarSeperateActivity.this, "No Data Found", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(CandleBarSeperateActivity.this, "No Data Found", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -679,31 +683,63 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
     }
 
     @Override
-    public void showExangeList(List<String> list) {
-        currencyList2 = new ArrayList<>();
-        currencyList2.addAll(list);
+    public void showExangeList(Map<String, ArrayList<String>> list) {
+        arrayListMap= list;
+        /*currencyListTo = new ArrayList<>();
+        currencyListTo.addAll(list);
 
         System.out.println(list);
         ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, list);
         myAdapter2.setDropDownViewResource(android.R.layout.simple_list_item_checked);
-        mCurSpinner1.setAdapter(myAdapter2);
+        spinnerTo.setAdapter(myAdapter2);*/
+        ArrayList <String> tempStrings= new ArrayList<>();
+
+        System.out.println("Key1--------------- ");
+        Set set = (Set) list.entrySet();
+        //Create iterator on Set
+        Iterator iterator = set.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry mapEntry = (Map.Entry) iterator.next();
+
+            // Get Key
+            String keyValue = (String) mapEntry.getKey();
+
+            //Get Value
+            ArrayList<String> value = (ArrayList<String>) mapEntry.getValue();
+            tempStrings.add(keyValue);
+            System.out.println("Key : " + keyValue + "= Value : " + value);
+        }
+
+        currencyList= new ArrayList<>();
+        currencyList.addAll(tempStrings);
+        ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, currencyList);
+        myAdapter2.setDropDownViewResource(android.R.layout.simple_list_item_checked);
+        spinnerFrom.setAdapter(myAdapter2);
+
+        System.out.println("Key--------------- ");
+
+
+
     }
 
-    private class CustomOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
+    private class SpinnerFromOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
-            currency = currencyList.get(pos);
-           /* if(defalutExchanges){
-                cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange);
-                mChart.invalidate();
+            currencyFrom = currencyList.get(pos);
+            if(defalutExchanges){
+                //cryptoPresenter.showCryptoOHLC( currencyTo, currencyFrom, per, exchange);
+                //mChart.invalidate();
             }else {
-                cryptoPresenter.getTopExchange(currency,5);
-            }*/
 
-            cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange);
-            mChart.invalidate();
-            Log.d(" ","CustomOnItemSelectedListener "+ currency);
+                setDataForSpinnerTo(currencyFrom);
+
+                //  cryptoPresenter.getTopExchange(currency,5);
+            }
+
+            cryptoPresenter.showCryptoOHLC( currencyTo, currencyFrom, per, exchange);
+             mChart.invalidate();
+            Log.d(" ","CustomOnItemSelectedListener "+ currencyFrom);
         }
 
         @Override
@@ -713,13 +749,38 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
 
     }
 
+    private void setDataForSpinnerTo(String currencyFrom){
+        ArrayList<String> tempTo= new ArrayList<>();
+        Set set = (Set) arrayListMap.entrySet();
+        //Create iterator on Set
+        Iterator iterator = set.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry mapEntry = (Map.Entry) iterator.next();
+            // Get Key
+            String keyValue = (String) mapEntry.getKey();
+            //Get Value
 
-    private class CustomOnItemSelectedListener2 implements AdapterView.OnItemSelectedListener {
+            if(keyValue.equals(currencyFrom)){
+                ArrayList<String> value = (ArrayList<String>) mapEntry.getValue();
+                tempTo.addAll(value);
+            }
+            System.out.println("Key : " + keyValue + "= Value : " + tempTo);
+        }
+
+        currencyListTo= new ArrayList<>();
+        currencyListTo.addAll(tempTo);
+        ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, currencyListTo);
+        myAdapter2.setDropDownViewResource(android.R.layout.simple_list_item_checked);
+        spinnerTo.setAdapter(myAdapter2);
+    }
+
+
+    private class SpinnetToOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
 
-            currency1 = currencyList2.get(pos);
-            cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange);
+            currencyTo = currencyListTo.get(pos);
+            cryptoPresenter.showCryptoOHLC( currencyTo, currencyFrom, per, exchange);
             mChart.invalidate();
         }
 
@@ -739,37 +800,42 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
 
                 exchange= "CCCAGG";
                 /*currencyList = new ArrayList<>();
-                for (int i = 0; i < mCurrencies.length; i++){
-                    String title = mCurrencies[i];
+                for (int i = 0; i < currenciesFrom.length; i++){
+                    String title = currenciesFrom[i];
                     currencyList.add(title);
                 }
-                currencyList2 = new ArrayList<>();
-                for (int i = 0; i < mCurrencies2.length; i++){
-                    String title = mCurrencies2[i];
-                    currencyList2.add(title);
+                currencyListTo = new ArrayList<>();
+                for (int i = 0; i < currenciesTo.length; i++){
+                    String title = currenciesTo[i];
+                    currencyListTo.add(title);
                 }*/
 
 
-                /*ArrayAdapter<String> myAdapter = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, mCurrencies);
+                ArrayAdapter<String> myAdapter = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, currenciesFrom);
                 myAdapter.setDropDownViewResource(android.R.layout.simple_list_item_checked);
-                mCurSpinner.setAdapter(myAdapter);
+                spinnerFrom.setAdapter(myAdapter);
 
-                ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, mCurrencies2);
+                ArrayAdapter<String> myAdapter2 = new ArrayAdapter<>(CandleBarSeperateActivity.this, android.R.layout.simple_spinner_item, currenciesTo);
                 myAdapter2.setDropDownViewResource(android.R.layout.simple_list_item_checked);
-                mCurSpinner1.setAdapter(myAdapter2);*/
+                spinnerTo.setAdapter(myAdapter2);
 
             }else {
                 defalutExchanges=false;
-               // cryptoPresenter.getTopExchange(currency,5);
+                // cryptoPresenter.getTopExchange(currency,5);
                 exchange= mExchanges[pos];
-                /*cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange);
+                /*cryptoPresenter.showCryptoOHLC( currencyTo, currency, per, exchange);
                 mChart.invalidate();*/
+
+                cryptoPresenter.getTopExchange(exchange);
+                mChart.invalidate();
+
+
 
             }
 
 
-            cryptoPresenter.showCryptoOHLC( currency1, currency, per, exchange);
-            mChart.invalidate();
+            // cryptoPresenter.showCryptoOHLC( currencyTo, currencyFrom, per, exchange);
+            //mChart.invalidate();
         }
 
         @Override
@@ -800,11 +866,11 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
 
             if (jsonStr != null) {
                 try {
-                    JSONObject ethObj = new JSONObject(jsonStr).getJSONObject(currency);
+                    JSONObject ethObj = new JSONObject(jsonStr).getJSONObject(currencyFrom);
                     Double btcVal = ethObj.getDouble("BTC");
                     Double ethVal = ethObj.getDouble("USD");
 
-                    sCurrency= new Currency(currency,btcVal , ethVal);
+                    sCurrency= new Currency(currencyFrom,btcVal , ethVal);
 
                 } catch (final JSONException e) {
                     e.printStackTrace();
@@ -844,7 +910,7 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms="+currency+"&tsyms=BTC,USD";
+            jsonURL = "https://min-api.cryptocompare.com/data/pricemulti?fsyms="+currencyFrom+"&tsyms=BTC,USD";
         }
 
         @Override
@@ -855,11 +921,11 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
             Log.d("URL: "," "+jsonURL+"\n"+jsonStr);
             if (jsonStr != null) {
                 try {
-                    JSONObject ethObj = new JSONObject(jsonStr).getJSONObject(currency);
+                    JSONObject ethObj = new JSONObject(jsonStr).getJSONObject(currencyFrom);
 
                     Double btcVal = ethObj.getDouble("BTC");
                     Double ethVal = ethObj.getDouble("USD");
-                    sCurrency = new Currency(currency,btcVal , ethVal);
+                    sCurrency = new Currency(currencyFrom,btcVal , ethVal);
 
                 } catch (final JSONException e) {
 
@@ -873,12 +939,16 @@ public class CandleBarSeperateActivity extends AppCompatActivity implements ICry
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
+            try {
+                if (jsonStr!=null){
+                    txtcurrecyRates.setText("BTC: "+ sCurrency.getBtcValue()+"\nUSD: "+sCurrency.getEthValue());
+                }else {
 
-            if (jsonStr!=null){
-                txtcurrecyRates.setText("BTC: "+ sCurrency.getBtcValue()+"\nUSD: "+sCurrency.getEthValue());
-            }else {
-
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
+
         }
     }
 

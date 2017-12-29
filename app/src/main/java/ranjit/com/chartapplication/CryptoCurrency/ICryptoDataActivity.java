@@ -1,6 +1,8 @@
 package ranjit.com.chartapplication.CryptoCurrency;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import ranjit.com.chartapplication.quandle.OHLC;
 
@@ -12,6 +14,6 @@ public interface ICryptoDataActivity {
     void showCryptoOHLC(List<OHLC> list);
     void showProgresBar();
     void stopProgresBar();
-    void showExangeList(List<String> list);
+    void showExangeList(Map<String, ArrayList<String>> list);
 
 }
